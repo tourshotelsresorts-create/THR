@@ -1,0 +1,4 @@
+{
+  "name": "THR Holidays",
+  "install": "corepack enable\npnpm install --frozen-lockfile\npnpm db:generate"
+}

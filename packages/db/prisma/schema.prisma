@@ -1,0 +1,493 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  AGENT
+  CONTRACTING_ADMIN
+  REVENUE_ADMIN
+  SUPPORT
+  FINANCE_READONLY
+}
+
+enum MealPlan {
+  EP
+  CP
+  MAP
+  AP
+}
+
+enum RateSource {
+  STATIC
+  API
+}
+
+enum VehicleType {
+  SEDAN
+  SUV
+  PREMIUM_SUV_INNOVA
+  LUXURY
+  VAN
+  MINI_COACH
+  COACH
+}
+
+enum TransferType {
+  NONE
+  SIC
+  PRIVATE
+}
+
+enum SlotType {
+  HOTEL_NIGHT
+  ACTIVITY_SLOT
+  TRANSFER_SLOT
+}
+
+enum SupplierType {
+  HOTEL
+  VEHICLE
+  ACTIVITY
+  DMC
+}
+
+enum MarkupScope {
+  DESTINATION
+  HOTEL_CATEGORY
+  PACKAGE_COST_BAND
+  AGENT_GROUP
+  CUSTOMER_SEGMENT
+  SUPPLIER
+  PRODUCT_TYPE
+}
+
+enum MarkupType {
+  FIXED
+  PERCENTAGE
+}
+
+enum TaxType {
+  GST
+  TCS
+}
+
+enum QuoteStatus {
+  DRAFT
+  SHARED
+  CONVERTED
+  EXPIRED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+model Destination {
+  id          String   @id @default(cuid())
+  country     String
+  city        String
+  countryCode String
+  airports    Json     @default("[]")
+  attractions Json     @default("[]")
+  mapsUrl     String?
+  weather     String?
+  bestSeason  String?
+  visaInfo    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  hotels     Hotel[]
+  activities Activity[]
+  templates  ItineraryTemplate[]
+  vehicles   Vehicle[]
+
+  @@unique([country, city])
+}
+
+model Supplier {
+  id                   String       @id @default(cuid())
+  name                 String
+  type                 SupplierType
+  contactName          String?
+  contactEmail         String?
+  contactPhone         String?
+  commercialTermsRef   String?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  hotels     Hotel[]
+  vehicles   Vehicle[]
+  activities Activity[]
+}
+
+model ChildPolicy {
+  id              String  @id @default(cuid())
+  name            String
+  freeUntilAge    Int     @default(5)
+  childRateFrom   Int     @default(6)
+  childRateTo     Int     @default(11)
+  extraBedAllowed Boolean @default(true)
+  notes           String?
+  hotels          Hotel[]
+}
+
+model CancellationPolicy {
+  id          String  @id @default(cuid())
+  name        String
+  rulesJson   Json
+  description String?
+  hotels      Hotel[]
+}
+
+model Hotel {
+  id               String    @id @default(cuid())
+  name             String
+  destinationId    String
+  destination      Destination @relation(fields: [destinationId], references: [id])
+  category         String
+  starRating       Int
+  validFrom        DateTime
+  validTo          DateTime
+  blackoutDates    Json      @default("[]")
+  supplierId       String
+  supplier         Supplier  @relation(fields: [supplierId], references: [id])
+  priorityRanking  Int       @default(100)
+  reviewScore      Decimal   @default(8.0)
+  distanceFromCityKm Decimal @default(0)
+  tags             String[]  @default([])
+  images           Json      @default("[]")
+  documents        Json      @default("[]")
+  minStayNights    Int       @default(1)
+  childPolicyId    String?
+  childPolicy      ChildPolicy? @relation(fields: [childPolicyId], references: [id])
+  cancellationPolicyId String?
+  cancellationPolicy CancellationPolicy? @relation(fields: [cancellationPolicyId], references: [id])
+  apiHotelCode     String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  roomTypes RoomType[]
+}
+
+model RoomType {
+  id            String   @id @default(cuid())
+  hotelId       String
+  hotel         Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  name          String
+  sizeSqm       Int?
+  maxOccupancy  Int
+  mealPlan      MealPlan
+  images        Json     @default("[]")
+  apiRoomCode   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  rates HotelRate[]
+}
+
+model SeasonalRule {
+  id          String   @id @default(cuid())
+  name        String
+  validFrom   DateTime
+  validTo     DateTime
+  multiplier  Decimal  @default(1.0)
+  createdAt   DateTime @default(now())
+
+  hotelRates    HotelRate[]
+  vehicleRates  VehicleRate[]
+}
+
+model HotelRate {
+  id             String        @id @default(cuid())
+  roomTypeId     String
+  roomType       RoomType      @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  source         RateSource
+  currency       String        @default("INR")
+  seasonalRuleId String?
+  seasonalRule   SeasonalRule? @relation(fields: [seasonalRuleId], references: [id])
+  /// Canonical minor units (paise) per room per night
+  priceMinor     Int
+  validFrom      DateTime
+  validTo        DateTime
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([roomTypeId, source, validFrom, validTo])
+}
+
+model Vehicle {
+  id               String      @id @default(cuid())
+  name             String
+  type             VehicleType
+  seatingCapacity  Int
+  supplierId       String
+  supplier         Supplier    @relation(fields: [supplierId], references: [id])
+  destinationId    String
+  destination      Destination @relation(fields: [destinationId], references: [id])
+  city             String
+  route            String?
+  operatingHoursFrom String    @default("06:00")
+  operatingHoursTo   String    @default("22:00")
+  images           Json        @default("[]")
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  rates VehicleRate[]
+}
+
+model VehicleRate {
+  id                   String        @id @default(cuid())
+  vehicleId            String
+  vehicle              Vehicle       @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  currency             String        @default("INR")
+  airportTransferMinor Int
+  sicRateMinor         Int
+  privateRateMinor     Int
+  extraHourMinor       Int
+  driverChargeMinor    Int
+  tollMinor            Int
+  parkingMinor         Int
+  fuelSurchargeMinor   Int
+  nightChargeMinor     Int
+  seasonalRuleId       String?
+  seasonalRule         SeasonalRule? @relation(fields: [seasonalRuleId], references: [id])
+  validFrom            DateTime
+  validTo              DateTime
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+}
+
+model Activity {
+  id                   String      @id @default(cuid())
+  name                 String
+  description          String
+  destinationId        String
+  destination          Destination @relation(fields: [destinationId], references: [id])
+  durationMinutes      Int
+  recommendedTime      String?
+  operatingDays        Int[]       @default([0, 1, 2, 3, 4, 5, 6])
+  operatingHours       String?
+  category             String
+  supplierId           String
+  supplier             Supplier    @relation(fields: [supplierId], references: [id])
+  images               Json        @default("[]")
+  apiActivityCode      String?
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  options ActivityOption[]
+}
+
+model ActivityOption {
+  id                   String       @id @default(cuid())
+  activityId           String
+  activity             Activity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  name                 String
+  transferIncluded     Boolean
+  transferType         TransferType
+  pickupTime           String?
+  adultRateMinor       Int
+  childRateMinor       Int
+  seniorRateMinor      Int
+  cancellationRules    String?
+  instantConfirmation  Boolean      @default(true)
+  voucherType          String       @default("e-voucher")
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+}
+
+model ItineraryTemplate {
+  id             String      @id @default(cuid())
+  name           String
+  destinationId  String
+  destination    Destination @relation(fields: [destinationId], references: [id])
+  dayCount       Int
+  nightCount     Int
+  minStayNights  Int         @default(1)
+  inclusions     Json        @default("[]")
+  exclusions     Json        @default("[]")
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  slots    ItinerarySlot[]
+  packages Package[]
+}
+
+model ItinerarySlot {
+  id                       String  @id @default(cuid())
+  templateId               String
+  template                 ItineraryTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  dayNumber                Int
+  slotType                 SlotType
+  sequence                 Int
+  defaultHotelId           String?
+  defaultRoomTypeId        String?
+  defaultActivityId        String?
+  defaultActivityOptionId  String?
+
+  @@unique([templateId, dayNumber, slotType, sequence])
+}
+
+model AgentGroup {
+  id     String  @id @default(cuid())
+  name   String  @unique
+  agents Agent[]
+}
+
+model CustomerSegment {
+  id     String  @id @default(cuid())
+  name   String  @unique
+  agents Agent[]
+}
+
+model Agent {
+  id                 String           @id @default(cuid())
+  email              String           @unique
+  name               String
+  passwordHash       String
+  role               Role             @default(AGENT)
+  agencyName         String?
+  commissionBps      Int              @default(500)
+  agentGroupId       String?
+  agentGroup         AgentGroup?      @relation(fields: [agentGroupId], references: [id])
+  customerSegmentId  String?
+  customerSegment    CustomerSegment? @relation(fields: [customerSegmentId], references: [id])
+  active             Boolean          @default(true)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  packages Package[]
+  quotes   Quote[]
+  auditLogs AuditLog[]
+}
+
+model MarkupRule {
+  id                 String      @id @default(cuid())
+  name               String
+  scope              MarkupScope
+  type               MarkupType
+  /// PERCENTAGE: basis points (1250 = 12.50%). FIXED: canonical minor units.
+  value              Int
+  destinationId      String?
+  hotelCategory      String?
+  costBandMinMinor   Int?
+  costBandMaxMinor   Int?
+  agentGroupId       String?
+  customerSegmentId  String?
+  supplierId         String?
+  productType        String?
+  validFrom          DateTime?
+  validTo            DateTime?
+  priority           Int         @default(0)
+  enabled            Boolean     @default(true)
+  exclusive          Boolean     @default(false)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+}
+
+model TaxRule {
+  id             String   @id @default(cuid())
+  type           TaxType
+  name           String
+  /// basis points (1800 = 18%)
+  rateBps        Int
+  nationalityIn  String[] @default([])
+  nationalityOut String[] @default([])
+  minTaxableMinor Int     @default(0)
+  enabled        Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model FxRate {
+  id           String   @id @default(cuid())
+  fromCurrency String
+  toCurrency   String
+  /// Rate scaled by 1e6 (e.g. 83000000 = 83.000000 INR per USD inverted as needed)
+  rateE6       Int
+  asOf         DateTime @default(now())
+
+  @@unique([fromCurrency, toCurrency])
+}
+
+model SystemSetting {
+  key   String @id
+  value String
+}
+
+model Package {
+  id                 String   @id @default(cuid())
+  templateId         String
+  template           ItineraryTemplate @relation(fields: [templateId], references: [id])
+  destinationId      String
+  travelDate         DateTime
+  nights             Int
+  adults             Int
+  children           Int
+  childAges          Int[]    @default([])
+  rooms              Int
+  nationality        String
+  displayCurrency    String
+  stateJson          Json
+  priceJson          Json
+  agentId            String?
+  agent              Agent?   @relation(fields: [agentId], references: [id])
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  quotes Quote[]
+}
+
+model Quote {
+  id                 String      @id @default(cuid())
+  packageId          String
+  package            Package     @relation(fields: [packageId], references: [id])
+  agentId            String
+  agent              Agent       @relation(fields: [agentId], references: [id])
+  generatedAt        DateTime    @default(now())
+  rateLockExpiresAt  DateTime
+  priceBreakupJson   Json
+  snapshotJson       Json
+  shareHistoryJson   Json        @default("[]")
+  status             QuoteStatus @default(DRAFT)
+  idempotencyKey     String?     @unique
+  publicToken        String      @unique
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  bookings Booking[]
+}
+
+model Booking {
+  id             String         @id @default(cuid())
+  quoteId        String
+  quote          Quote          @relation(fields: [quoteId], references: [id])
+  confirmedAt    DateTime?
+  paymentRef     String?
+  status         BookingStatus  @default(PENDING)
+  idempotencyKey String?        @unique
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      Agent?   @relation(fields: [actorId], references: [id])
+  entityType String
+  entityId   String
+  action     String
+  beforeJson Json?
+  afterJson  Json?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}

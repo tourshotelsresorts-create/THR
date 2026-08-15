@@ -1,0 +1,27 @@
+{
+  "name": "thr-holidays",
+  "version": "0.1.0",
+  "private": true,
+  "description": "THR.com Holidays — itinerary-based dynamic package booking platform",
+  "packageManager": "pnpm@10.33.3",
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "test:unit": "turbo run test --filter=@thr/pricing --filter=@thr/vendors --filter=@thr/api",
+    "typecheck": "turbo run typecheck",
+    "db:generate": "pnpm --filter @thr/db generate",
+    "db:migrate": "pnpm --filter @thr/db migrate",
+    "db:seed": "pnpm --filter @thr/db seed",
+    "db:push": "pnpm --filter @thr/db push",
+    "e2e": "pnpm --filter @thr/e2e test:playwright"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.4",
+    "typescript": "^5.8.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["prisma", "@prisma/client", "@prisma/engines", "esbuild", "msgpackr-extract"]
+  }
+}

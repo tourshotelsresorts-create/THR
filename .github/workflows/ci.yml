@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "cursor/**"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: thr
+          POSTGRES_PASSWORD: thr
+          POSTGRES_DB: thr_holidays
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U thr -d thr_holidays"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://thr:thr@localhost:5432/thr_holidays?schema=public
+      JWT_SECRET: ci-test-secret-not-for-production-use
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:generate
+      - run: pnpm --filter @thr/db exec prisma db push
+      - run: pnpm test
+      - run: pnpm typecheck
