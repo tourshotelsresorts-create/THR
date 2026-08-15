@@ -353,6 +353,11 @@ export async function priceState(state: PackageState, commissionBps: number): Pr
 }
 
 export async function persistPackage(priced: PricedPackage, agentId?: string): Promise<string> {
+  let validAgentId: string | undefined;
+  if (agentId) {
+    const agent = await prisma.agent.findUnique({ where: { id: agentId }, select: { id: true } });
+    validAgentId = agent?.id;
+  }
   const row = await prisma.package.upsert({
     where: { id: priced.package.id },
     create: {
@@ -369,7 +374,7 @@ export async function persistPackage(priced: PricedPackage, agentId?: string): P
       displayCurrency: priced.package.displayCurrency,
       stateJson: priced.package as object,
       priceJson: priced.price as object,
-      agentId,
+      agentId: validAgentId,
     },
     update: {
       stateJson: priced.package as object,
