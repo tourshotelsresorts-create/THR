@@ -24,8 +24,12 @@ export async function searchPackages(req: SearchRequest, agent?: { id: string; a
   if (v.length) throw validationError(v[0]!.message, v);
 
   const templates = await prisma.itineraryTemplate.findMany({
-    where: { destinationId: req.destinationId, nightCount: req.nights },
+    where: {
+      destinationId: req.destinationId,
+      ...(req.nights > 0 ? { nightCount: req.nights } : {}),
+    },
     include: { slots: true, destination: true },
+    orderBy: { nightCount: "asc" },
   });
   if (!templates.length) {
     throw new ApiError(404, "No itinerary template matches this destination and night count. Day-wise structure is fixed per template.", "NO_TEMPLATE");
@@ -65,8 +69,9 @@ export async function instantiateAndPrice(
         })) ?? null;
   if (!vehicle) throw new ApiError(422, "No vehicle contracted for this destination.", "NO_VEHICLE");
 
+  const nights = tpl.nightCount;
   const start = parseIsoDate(req.travelDate);
-  const nightDates = nightsBetween(start, req.nights);
+  const nightDates = nightsBetween(start, nights);
 
   const hotels = await Promise.all(
     hotelSlots.map(async (slot, i) => {
@@ -111,7 +116,7 @@ export async function instantiateAndPrice(
     templateId: tpl.id,
     destinationId: tpl.destinationId,
     travelDate: req.travelDate,
-    nights: req.nights,
+    nights,
     adults: req.adults,
     children: req.children,
     childAges: req.childAges,
@@ -335,6 +340,7 @@ export async function priceState(state: PackageState, commissionBps: number): Pr
   const cancel = primaryHotel?.cancellationPolicy?.description ?? "See hotel policy.";
   const priced: PricedPackage = {
     package: state,
+    templateName: tpl.name,
     price,
     feasibility: combineFeasibility([failures]),
     inclusions: asStringArray(tpl.inclusions),

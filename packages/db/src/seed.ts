@@ -214,7 +214,7 @@ async function main() {
   });
   const novotelRoom = await prisma.roomType.findFirstOrThrow({ where: { hotelId: novotel.id } });
 
-  await hotel({
+  const inn = await hotel({
     name: "Holiday Inn Goa Candolim",
     dest: goa.id,
     category: "midscale",
@@ -225,8 +225,9 @@ async function main() {
     minStay: 2,
     rooms: [{ name: "Standard", occ: 3, meal: "EP", staticMinor: 620000 }],
   });
+  const innRoom = await prisma.roomType.findFirstOrThrow({ where: { hotelId: inn.id } });
 
-  await hotel({
+  const alila = await hotel({
     name: "Alila Diwa Goa",
     dest: goa.id,
     category: "luxury",
@@ -237,6 +238,7 @@ async function main() {
     blackouts: ["2026-12-24", "2026-12-25", "2026-12-31"],
     rooms: [{ name: "Garden Villa", occ: 3, meal: "MAP", staticMinor: 2100000 }],
   });
+  const alilaRoom = await prisma.roomType.findFirstOrThrow({ where: { hotelId: alila.id } });
 
   const atlantis = await hotel({
     name: "Atlantis The Palm",
@@ -250,7 +252,7 @@ async function main() {
   });
   const atlantisRoom = await prisma.roomType.findFirstOrThrow({ where: { hotelId: atlantis.id } });
 
-  await hotel({
+  const rove = await hotel({
     name: "Rove Downtown",
     dest: dubai.id,
     category: "midscale",
@@ -260,6 +262,31 @@ async function main() {
     review: 8.2,
     rooms: [{ name: "Rove Room", occ: 3, meal: "CP", staticMinor: 1100000 }],
   });
+  const roveRoom = await prisma.roomType.findFirstOrThrow({ where: { hotelId: rove.id } });
+
+  const jumeirah = await hotel({
+    name: "Jumeirah Beach Hotel",
+    dest: dubai.id,
+    category: "luxury",
+    stars: 5,
+    tags: ["beachfront", "luxury", "honeymoon"],
+    distance: 8,
+    review: 9.2,
+    rooms: [{ name: "Ocean Deluxe", occ: 3, meal: "CP", staticMinor: 2800000, apiMinor: 2680000 }],
+  });
+  const jumeirahRoom = await prisma.roomType.findFirstOrThrow({ where: { hotelId: jumeirah.id } });
+
+  const addressDx = await hotel({
+    name: "Address Downtown",
+    dest: dubai.id,
+    category: "upscale",
+    stars: 5,
+    tags: ["city-center", "luxury"],
+    distance: 0.4,
+    review: 8.8,
+    rooms: [{ name: "Burj View", occ: 3, meal: "CP", staticMinor: 2450000 }],
+  });
+  const addressRoom = await prisma.roomType.findFirstOrThrow({ where: { hotelId: addressDx.id } });
 
   async function vehicle(opts: {
     name: string;
@@ -415,6 +442,26 @@ async function main() {
     adult: 320000,
     child: 180000,
   });
+  const spice = await activity({
+    name: "Spice plantation lunch",
+    dest: goa.id,
+    desc: "Guided plantation walk with Goan lunch.",
+    minutes: 240,
+    category: "culture",
+    time: "afternoon",
+    adult: 140000,
+    child: 80000,
+  });
+  const dolphins = await activity({
+    name: "Dolphin spotting cruise",
+    dest: goa.id,
+    desc: "Morning boat trip off the coast.",
+    minutes: 150,
+    category: "nature",
+    time: "morning",
+    adult: 160000,
+    child: 90000,
+  });
   const desert = await activity({
     name: "Desert safari with BBQ",
     dest: dubai.id,
@@ -425,51 +472,223 @@ async function main() {
     adult: 450000,
     child: 250000,
   });
-
-  const goaTpl = await prisma.itineraryTemplate.create({
-    data: {
-      name: "Goa Classic 3N/4D",
-      destinationId: goa.id,
-      dayCount: 4,
-      nightCount: 3,
-      minStayNights: 3,
-      inclusions: ["Airport transfers", "Daily breakfast (if CP+)", "Selected activities"],
-      exclusions: ["Flights", "Personal expenses", "Travel insurance issuance"],
-      slots: {
-        create: [
-          { dayNumber: 1, slotType: "TRANSFER_SLOT", sequence: 1 },
-          { dayNumber: 1, slotType: "HOTEL_NIGHT", sequence: 2, defaultHotelId: taj.id, defaultRoomTypeId: tajDeluxe.id },
-          { dayNumber: 2, slotType: "ACTIVITY_SLOT", sequence: 1, defaultActivityId: cruise.a.id, defaultActivityOptionId: cruise.sic.id },
-          { dayNumber: 2, slotType: "HOTEL_NIGHT", sequence: 2, defaultHotelId: taj.id, defaultRoomTypeId: tajDeluxe.id },
-          { dayNumber: 3, slotType: "ACTIVITY_SLOT", sequence: 1, defaultActivityId: dudhsagar.a.id, defaultActivityOptionId: dudhsagar.none.id },
-          { dayNumber: 3, slotType: "HOTEL_NIGHT", sequence: 2, defaultHotelId: taj.id, defaultRoomTypeId: tajDeluxe.id },
-          { dayNumber: 4, slotType: "TRANSFER_SLOT", sequence: 1 },
-        ],
-      },
-    },
+  const burj = await activity({
+    name: "Burj Khalifa At The Top",
+    dest: dubai.id,
+    desc: "Level 124/125 observation deck.",
+    minutes: 120,
+    category: "sightseeing",
+    time: "evening",
+    adult: 380000,
+    child: 220000,
+  });
+  const dhow = await activity({
+    name: "Dubai Creek dhow dinner",
+    dest: dubai.id,
+    desc: "Traditional dhow cruise with buffet.",
+    minutes: 150,
+    category: "sightseeing",
+    time: "evening",
+    adult: 220000,
+    child: 120000,
+  });
+  const aquarium = await activity({
+    name: "Dubai Aquarium & Underwater Zoo",
+    dest: dubai.id,
+    desc: "Tunnel and penguin cove at Dubai Mall.",
+    minutes: 120,
+    category: "family",
+    time: "morning",
+    adult: 180000,
+    child: 110000,
   });
 
-  await prisma.itineraryTemplate.create({
-    data: {
-      name: "Dubai Highlights 4N/5D",
-      destinationId: dubai.id,
-      dayCount: 5,
-      nightCount: 4,
-      minStayNights: 4,
-      inclusions: ["Airport transfers", "Desert safari"],
-      exclusions: ["Flights", "UAE visa issuance"],
-      slots: {
-        create: [
-          { dayNumber: 1, slotType: "TRANSFER_SLOT", sequence: 1 },
-          { dayNumber: 1, slotType: "HOTEL_NIGHT", sequence: 2, defaultHotelId: atlantis.id, defaultRoomTypeId: atlantisRoom.id },
-          { dayNumber: 2, slotType: "HOTEL_NIGHT", sequence: 2, defaultHotelId: atlantis.id, defaultRoomTypeId: atlantisRoom.id },
-          { dayNumber: 3, slotType: "ACTIVITY_SLOT", sequence: 1, defaultActivityId: desert.a.id, defaultActivityOptionId: desert.priv.id },
-          { dayNumber: 3, slotType: "HOTEL_NIGHT", sequence: 2, defaultHotelId: atlantis.id, defaultRoomTypeId: atlantisRoom.id },
-          { dayNumber: 4, slotType: "HOTEL_NIGHT", sequence: 2, defaultHotelId: atlantis.id, defaultRoomTypeId: atlantisRoom.id },
-          { dayNumber: 5, slotType: "TRANSFER_SLOT", sequence: 1 },
-        ],
+  type ActPick = { day: number; activityId: string; optionId: string };
+
+  async function createPackageTemplate(opts: {
+    name: string;
+    destId: string;
+    nights: number;
+    hotelId: string;
+    roomTypeId: string;
+    activities?: ActPick[];
+    inclusions: string[];
+    exclusions: string[];
+  }) {
+    const dayCount = opts.nights + 1;
+    const slots: Array<{
+      dayNumber: number;
+      slotType: "TRANSFER_SLOT" | "HOTEL_NIGHT" | "ACTIVITY_SLOT";
+      sequence: number;
+      defaultHotelId?: string;
+      defaultRoomTypeId?: string;
+      defaultActivityId?: string;
+      defaultActivityOptionId?: string;
+    }> = [{ dayNumber: 1, slotType: "TRANSFER_SLOT", sequence: 1 }];
+    for (let n = 1; n <= opts.nights; n++) {
+      const acts = (opts.activities ?? []).filter((a) => a.day === n);
+      let seq = 1;
+      for (const a of acts) {
+        slots.push({
+          dayNumber: n,
+          slotType: "ACTIVITY_SLOT",
+          sequence: seq++,
+          defaultActivityId: a.activityId,
+          defaultActivityOptionId: a.optionId,
+        });
+      }
+      slots.push({
+        dayNumber: n,
+        slotType: "HOTEL_NIGHT",
+        sequence: seq,
+        defaultHotelId: opts.hotelId,
+        defaultRoomTypeId: opts.roomTypeId,
+      });
+    }
+    slots.push({ dayNumber: dayCount, slotType: "TRANSFER_SLOT", sequence: 1 });
+    return prisma.itineraryTemplate.create({
+      data: {
+        name: opts.name,
+        destinationId: opts.destId,
+        dayCount,
+        nightCount: opts.nights,
+        minStayNights: opts.nights,
+        inclusions: opts.inclusions,
+        exclusions: opts.exclusions,
+        slots: { create: slots },
       },
-    },
+    });
+  }
+
+  const commonEx = ["Flights", "Personal expenses", "Visa/insurance issuance"];
+
+  await createPackageTemplate({
+    name: "GOA-01 Weekend Beach 2N/3D",
+    destId: goa.id,
+    nights: 2,
+    hotelId: inn.id,
+    roomTypeId: innRoom.id,
+    activities: [{ day: 2, activityId: dolphins.a.id, optionId: dolphins.sic.id }],
+    inclusions: ["Airport transfers", "Dolphin cruise (SIC)"],
+    exclusions: commonEx,
+  });
+  await createPackageTemplate({
+    name: "GOA-02 Classic 3N/4D",
+    destId: goa.id,
+    nights: 3,
+    hotelId: taj.id,
+    roomTypeId: tajDeluxe.id,
+    activities: [
+      { day: 2, activityId: cruise.a.id, optionId: cruise.sic.id },
+      { day: 3, activityId: dudhsagar.a.id, optionId: dudhsagar.none.id },
+    ],
+    inclusions: ["Airport transfers", "Breakfast", "Cruise + Dudhsagar"],
+    exclusions: commonEx,
+  });
+  await createPackageTemplate({
+    name: "GOA-03 Family Fun 4N/5D",
+    destId: goa.id,
+    nights: 4,
+    hotelId: novotel.id,
+    roomTypeId: novotelRoom.id,
+    activities: [
+      { day: 2, activityId: dolphins.a.id, optionId: dolphins.sic.id },
+      { day: 3, activityId: spice.a.id, optionId: spice.sic.id },
+      { day: 4, activityId: cruise.a.id, optionId: cruise.sic.id },
+    ],
+    inclusions: ["Airport transfers", "Family hotel", "3 activities"],
+    exclusions: commonEx,
+  });
+  await createPackageTemplate({
+    name: "GOA-04 Honeymoon 5N/6D",
+    destId: goa.id,
+    nights: 5,
+    hotelId: alila.id,
+    roomTypeId: alilaRoom.id,
+    activities: [
+      { day: 2, activityId: spice.a.id, optionId: spice.priv.id },
+      { day: 4, activityId: cruise.a.id, optionId: cruise.priv.id },
+    ],
+    inclusions: ["Airport transfers", "Luxury villa", "Private transfers on activities"],
+    exclusions: commonEx,
+  });
+  await createPackageTemplate({
+    name: "GOA-05 Grand Goa 7N/8D",
+    destId: goa.id,
+    nights: 7,
+    hotelId: taj.id,
+    roomTypeId: tajDeluxe.id,
+    activities: [
+      { day: 2, activityId: cruise.a.id, optionId: cruise.sic.id },
+      { day: 3, activityId: dudhsagar.a.id, optionId: dudhsagar.sic.id },
+      { day: 5, activityId: spice.a.id, optionId: spice.sic.id },
+      { day: 6, activityId: dolphins.a.id, optionId: dolphins.sic.id },
+    ],
+    inclusions: ["Airport transfers", "Taj stay", "4 experiences"],
+    exclusions: commonEx,
+  });
+
+  await createPackageTemplate({
+    name: "DXB-01 Stopover 2N/3D",
+    destId: dubai.id,
+    nights: 2,
+    hotelId: rove.id,
+    roomTypeId: roveRoom.id,
+    activities: [{ day: 2, activityId: aquarium.a.id, optionId: aquarium.none.id }],
+    inclusions: ["Airport transfers", "Downtown hotel", "Aquarium"],
+    exclusions: commonEx,
+  });
+  await createPackageTemplate({
+    name: "DXB-02 City Break 3N/4D",
+    destId: dubai.id,
+    nights: 3,
+    hotelId: addressDx.id,
+    roomTypeId: addressRoom.id,
+    activities: [
+      { day: 2, activityId: burj.a.id, optionId: burj.none.id },
+      { day: 3, activityId: dhow.a.id, optionId: dhow.sic.id },
+    ],
+    inclusions: ["Airport transfers", "Burj Khalifa + dhow dinner"],
+    exclusions: commonEx,
+  });
+  await createPackageTemplate({
+    name: "DXB-03 Highlights 4N/5D",
+    destId: dubai.id,
+    nights: 4,
+    hotelId: atlantis.id,
+    roomTypeId: atlantisRoom.id,
+    activities: [{ day: 3, activityId: desert.a.id, optionId: desert.priv.id }],
+    inclusions: ["Airport transfers", "Atlantis stay", "Private desert safari"],
+    exclusions: commonEx,
+  });
+  await createPackageTemplate({
+    name: "DXB-04 Luxury Palm 5N/6D",
+    destId: dubai.id,
+    nights: 5,
+    hotelId: atlantis.id,
+    roomTypeId: atlantisRoom.id,
+    activities: [
+      { day: 2, activityId: aquarium.a.id, optionId: aquarium.priv.id },
+      { day: 3, activityId: desert.a.id, optionId: desert.priv.id },
+      { day: 4, activityId: burj.a.id, optionId: burj.none.id },
+    ],
+    inclusions: ["Airport transfers", "Palm luxury", "Safari + Burj + Aquarium"],
+    exclusions: commonEx,
+  });
+  await createPackageTemplate({
+    name: "DXB-05 Grand Dubai 7N/8D",
+    destId: dubai.id,
+    nights: 7,
+    hotelId: jumeirah.id,
+    roomTypeId: jumeirahRoom.id,
+    activities: [
+      { day: 2, activityId: burj.a.id, optionId: burj.none.id },
+      { day: 3, activityId: desert.a.id, optionId: desert.priv.id },
+      { day: 4, activityId: dhow.a.id, optionId: dhow.priv.id },
+      { day: 6, activityId: aquarium.a.id, optionId: aquarium.sic.id },
+    ],
+    inclusions: ["Airport transfers", "Jumeirah Beach", "4 signature experiences"],
+    exclusions: commonEx,
   });
 
   const retail = await prisma.agentGroup.create({ data: { name: "Retail India" } });
@@ -568,14 +787,13 @@ async function main() {
     ],
   });
 
-  void goaTpl;
   void novotelRoom;
   void goaInnova;
   void dubaiSuv;
   void wholesale;
   void honeymoon;
 
-  console.log("Seed complete. Demo logins: agent@thr.com / Password123! (and contracting@, revenue@, support@, finance@thr.com)");
+  console.log("Seed complete. 5 Goa + 5 Dubai test packages. Demo logins: agent@thr.com / Password123!");
 }
 
 main()

@@ -32,8 +32,8 @@ export function validateSearch(req: SearchRequest): FeasibilityFailure[] {
   if (req.rooms < 1) {
     failures.push({ check: "VALIDATION", message: "At least one room is required." });
   }
-  if (req.nights < 1 || req.nights > 21) {
-    failures.push({ check: "VALIDATION", message: "Nights must be between 1 and 21." });
+  if (req.nights !== 0 && (req.nights < 1 || req.nights > 21)) {
+    failures.push({ check: "VALIDATION", message: "Nights must be between 1 and 21, or 0 to list all test packages." });
   }
   if (req.children !== req.childAges.length) {
     failures.push({

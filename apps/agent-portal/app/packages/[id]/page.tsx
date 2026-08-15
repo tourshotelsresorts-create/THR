@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { api, formatMoney } from "../../../lib/api";
 
 type Priced = {
+  templateName?: string;
   package: {
     id: string;
     nights: number;
@@ -70,7 +71,7 @@ export default function PackagePage({ params }: { params: { id: string } }) {
   return (
     <div className="wrap grid two">
       <div>
-        <h1>Customize package</h1>
+        <h1>{data.templateName ?? "Customize package"}</h1>
         <p className="muted">
           {data.package.nights} nights from {data.package.travelDate}. Day sequence is locked.
         </p>

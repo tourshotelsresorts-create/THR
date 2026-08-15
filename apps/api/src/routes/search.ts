@@ -8,7 +8,7 @@ import { validationError } from "../errors.js";
 const searchSchema = z.object({
   destinationId: z.string().min(1),
   travelDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "travelDate must be YYYY-MM-DD"),
-  nights: z.number().int().min(1).max(21),
+  nights: z.number().int().min(0).max(21),
   adults: z.number().int().min(1),
   children: z.number().int().min(0).default(0),
   childAges: z.array(z.number().int().min(0).max(17)).default([]),

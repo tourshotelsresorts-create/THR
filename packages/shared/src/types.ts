@@ -97,6 +97,7 @@ export interface PriceBreakup {
 
 export interface PricedPackage {
   package: PackageState;
+  templateName: string;
   price: PriceBreakup;
   feasibility: FeasibilityResult;
   inclusions: string[];

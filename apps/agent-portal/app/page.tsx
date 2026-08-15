@@ -1,16 +1,24 @@
 "use client";
 import { useEffect, useState } from "react";
-import { api } from "../lib/api";
+import { api, formatMoney } from "../lib/api";
 
 type Dest = { id: string; city: string; country: string };
+type Result = {
+  templateName: string;
+  package: { id: string; nights: number; travelDate: string };
+  price: { totalMinor: number };
+  feasibility: { feasible: boolean; failures: { message: string }[] };
+  inclusions: string[];
+};
 
 export default function SearchPage() {
   const [destinations, setDestinations] = useState<Dest[]>([]);
   const [error, setError] = useState("");
+  const [results, setResults] = useState<Result[]>([]);
   const [form, setForm] = useState({
     destinationId: "",
     travelDate: "2026-11-10",
-    nights: 3,
+    nights: 0,
     adults: 2,
     children: 0,
     rooms: 1,
@@ -34,23 +42,17 @@ export default function SearchPage() {
   async function search(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setResults([]);
     try {
-      const res = await api<{ results: { package: { id: string }; feasibility: { feasible: boolean; failures: { message: string }[] } }[] }>(
-        "/search",
-        {
-          method: "POST",
-          body: JSON.stringify({ ...form, childAges: [] }),
-        },
-      );
-      const first = res.results[0];
-      if (!first) {
+      const res = await api<{ results: Result[] }>("/search", {
+        method: "POST",
+        body: JSON.stringify({ ...form, childAges: [] }),
+      });
+      if (!res.results.length) {
         setError("No matching itinerary template.");
         return;
       }
-      if (!first.feasibility.feasible) {
-        setError(first.feasibility.failures.map((f) => f.message).join(" · "));
-      }
-      window.location.href = `/packages/${first.package.id}`;
+      setResults(res.results);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Search failed");
     }
@@ -59,7 +61,9 @@ export default function SearchPage() {
   return (
     <div className="wrap">
       <h1>Build a dynamic holiday</h1>
-      <p className="muted">Itinerary sequencing is fixed. Hotels, vehicles and activities swap with instant reprice.</p>
+      <p className="muted">
+        5 test packages each for Goa and Dubai. Set nights to <strong>0</strong> to list all packages for the destination.
+      </p>
       <form className="card grid" onSubmit={search}>
         <div className="row">
           <label>
@@ -77,8 +81,8 @@ export default function SearchPage() {
             <input type="date" value={form.travelDate} onChange={(e) => setForm({ ...form, travelDate: e.target.value })} />
           </label>
           <label>
-            Nights
-            <input type="number" min={1} value={form.nights} onChange={(e) => setForm({ ...form, nights: Number(e.target.value) })} />
+            Nights (0 = all)
+            <input type="number" min={0} value={form.nights} onChange={(e) => setForm({ ...form, nights: Number(e.target.value) })} />
           </label>
         </div>
         <div className="row">
@@ -113,6 +117,26 @@ export default function SearchPage() {
           Search packages
         </button>
       </form>
+
+      {results.length > 0 && (
+        <div style={{ marginTop: 24 }} className="grid">
+          <h2>{results.length} test packages</h2>
+          {results.map((r) => (
+            <div className="card" key={r.package.id}>
+              <strong>{r.templateName}</strong>
+              <div className="muted">
+                {r.package.nights} nights from {r.package.travelDate}
+                {!r.feasibility.feasible ? ` · ${r.feasibility.failures.map((f) => f.message).join(" ")}` : ""}
+              </div>
+              <div className="price">{formatMoney(r.price.totalMinor)}</div>
+              <p className="muted">{r.inclusions.join(" · ")}</p>
+              <a className="primary" style={{ display: "inline-block" }} href={`/packages/${r.package.id}`}>
+                Customize package
+              </a>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
