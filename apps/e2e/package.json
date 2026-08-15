@@ -1,0 +1,12 @@
+{
+  "name": "@thr/e2e",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "node -e \"console.log('Skipping Playwright in unit CI; run pnpm e2e')\"",
+    "test:playwright": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.1"
+  }
+}
