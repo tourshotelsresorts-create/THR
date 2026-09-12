@@ -243,6 +243,21 @@ button:hover,
   border-radius: 999px;
 }
 
+.hidden {
+  display: none !important;
+}
+
+.use-account {
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  background: var(--gold);
+  color: var(--navy);
+}
+
+.use-account:hover {
+  background: var(--gold-soft);
+}
+
 @media (max-width: 800px) {
   .login-card {
     grid-template-columns: 1fr;

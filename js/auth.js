@@ -43,14 +43,6 @@ function clearSession() {
   localStorage.removeItem(SESSION_KEY);
 }
 
-function requireAuth() {
-  const session = getSession();
-  if (!session) {
-    window.location.replace("index.html");
-  }
-  return session;
-}
-
 function authenticate(email, password) {
   return DEMO_USERS.find(
     (user) =>
