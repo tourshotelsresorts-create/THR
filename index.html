@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>THR India | Demo Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Source+Sans+3:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <section id="login-view" class="login-body">
+      <main class="login-card">
+        <section class="brand-panel">
+          <div>
+            <p class="eyebrow">Tours, Hotels &amp; Resorts</p>
+            <h1>THR India demo portal</h1>
+            <p>
+              This page works by opening <strong>index.html</strong> in your
+              browser. Do not use localhost unless you started a server on this
+              computer.
+            </p>
+          </div>
+          <div class="demo-box">
+            <h2>Demo login details — click Use to fill</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Role</th>
+                  <th>Email</th>
+                  <th>Password</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Admin</td>
+                  <td>admin@thrindia.demo</td>
+                  <td>Demo@THR2026</td>
+                  <td>
+                    <button
+                      type="button"
+                      class="use-account"
+                      data-email="admin@thrindia.demo"
+                      data-password="Demo@THR2026"
+                    >
+                      Use
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Travel Agent</td>
+                  <td>agent@thrindia.demo</td>
+                  <td>Agent@THR2026</td>
+                  <td>
+                    <button
+                      type="button"
+                      class="use-account"
+                      data-email="agent@thrindia.demo"
+                      data-password="Agent@THR2026"
+                    >
+                      Use
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Guest</td>
+                  <td>guest@thrindia.demo</td>
+                  <td>Guest@THR2026</td>
+                  <td>
+                    <button
+                      type="button"
+                      class="use-account"
+                      data-email="guest@thrindia.demo"
+                      data-password="Guest@THR2026"
+                    >
+                      Use
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <section class="form-panel">
+          <h2>Sign in</h2>
+          <p class="lede">Enter any demo account from the list, or click Use.</p>
+          <form id="login-form" novalidate>
+            <label for="email">Email</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="username"
+              required
+            />
+            <label for="password">Password</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              required
+            />
+            <p class="error" id="login-error" role="alert"></p>
+            <button type="submit">Enter portal</button>
+          </form>
+        </section>
+      </main>
+    </section>
+
+    <section id="dashboard-view" class="app-shell hidden" hidden>
+      <header class="topbar">
+        <h1>THR India</h1>
+        <div class="user-meta">
+          <span id="welcome"></span>
+          <span class="role-pill" id="role"></span>
+          <button type="button" id="logout">Sign out</button>
+        </div>
+      </header>
+      <main class="content">
+        <h2 id="headline">Welcome</h2>
+        <p id="summary"></p>
+        <div class="cards">
+          <article class="card">
+            <h3>Kerala backwaters</h3>
+            <p>Houseboat stay with transfers from Kochi.</p>
+          </article>
+          <article class="card">
+            <h3>Rajasthan palaces</h3>
+            <p>Jaipur and Udaipur heritage circuit, 6 nights.</p>
+          </article>
+          <article class="card">
+            <h3>Goa resorts</h3>
+            <p>Beachfront inventory for FIT and group travel.</p>
+          </article>
+        </div>
+      </main>
+    </section>
+
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
