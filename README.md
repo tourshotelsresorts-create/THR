@@ -34,6 +34,19 @@ Demo logins (password `Password123!`):
 
 Search **Goa, 3 nights** or **Dubai, 4 nights** (templates are fixed length).
 
+## Public Cloudflare demo URLs
+
+Quick Tunnels (`*.trycloudflare.com`) only stay up while the machine that started `cloudflared` is still running. When that Cloud Agent VM stops, the hostname stops resolving and the browser shows a connection error. That is expected — it is not a bad password.
+
+To publish a demo again from a running machine:
+
+```bash
+cloudflared tunnel --url http://127.0.0.1:3000
+cloudflared tunnel --url http://127.0.0.1:3001
+```
+
+Keep `NEXT_PUBLIC_API_URL=/thr-api` so the browser talks to the API through the same hostname.
+
 ## Tests
 
 ```bash
