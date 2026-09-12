@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>THR India | Demo Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Source+Sans+3:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="app-shell">
+    <header class="topbar">
+      <h1>THR India</h1>
+      <div class="user-meta">
+        <span id="welcome"></span>
+        <span class="role-pill" id="role"></span>
+        <button type="button" id="logout">Sign out</button>
+      </div>
+    </header>
+    <main class="content">
+      <h2 id="headline">Welcome</h2>
+      <p id="summary"></p>
+      <div class="cards">
+        <article class="card">
+          <h3>Kerala backwaters</h3>
+          <p>Houseboat stay with transfers from Kochi.</p>
+        </article>
+        <article class="card">
+          <h3>Rajasthan palaces</h3>
+          <p>Jaipur and Udaipur heritage circuit, 6 nights.</p>
+        </article>
+        <article class="card">
+          <h3>Goa resorts</h3>
+          <p>Beachfront inventory for FIT and group travel.</p>
+        </article>
+      </div>
+    </main>
+    <script src="js/auth.js"></script>
+    <script>
+      const session = requireAuth();
+      if (session) {
+        document.getElementById("welcome").textContent = session.name;
+        document.getElementById("role").textContent = session.role;
+        document.getElementById("headline").textContent = `Welcome, ${session.name}`;
+        const copy = {
+          Admin: "You have full demo access to packages, agents, and reports.",
+          "Travel Agent": "You can browse B2B rates and sample itineraries.",
+          Guest: "You can view published holiday packages.",
+        };
+        document.getElementById("summary").textContent =
+          copy[session.role] || "You are signed in to the THR demo portal.";
+      }
+
+      document.getElementById("logout").addEventListener("click", () => {
+        clearSession();
+        window.location.href = "index.html";
+      });
+    </script>
+  </body>
+</html>

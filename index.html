@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>THR India | Demo Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Source+Sans+3:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="login-body">
+    <main class="login-card">
+      <section class="brand-panel">
+        <div>
+          <p class="eyebrow">Tours, Hotels &amp; Resorts</p>
+          <h1>THR India demo portal</h1>
+          <p>
+            Use the demo accounts on this page to sign in. This is a local
+            preview login — not a live booking system.
+          </p>
+        </div>
+        <div class="demo-box">
+          <h2>Demo login details</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Email</th>
+                <th>Password</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Admin</td>
+                <td>admin@thrindia.demo</td>
+                <td>Demo@THR2026</td>
+              </tr>
+              <tr>
+                <td>Travel Agent</td>
+                <td>agent@thrindia.demo</td>
+                <td>Agent@THR2026</td>
+              </tr>
+              <tr>
+                <td>Guest</td>
+                <td>guest@thrindia.demo</td>
+                <td>Guest@THR2026</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <section class="form-panel">
+        <h2>Sign in</h2>
+        <p class="lede">Enter any demo account from the list.</p>
+        <form id="login-form" novalidate>
+          <label for="email">Email</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="username"
+            required
+          />
+          <label for="password">Password</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
+          <p class="error" id="login-error" role="alert"></p>
+          <button type="submit">Enter portal</button>
+        </form>
+      </section>
+    </main>
+    <script src="js/auth.js"></script>
+    <script>
+      if (getSession()) {
+        window.location.replace("dashboard.html");
+      }
+
+      document.getElementById("login-form").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const user = authenticate(email, password);
+        const errorEl = document.getElementById("login-error");
+
+        if (!user) {
+          errorEl.textContent = "Invalid demo credentials. Use an account from the list.";
+          return;
+        }
+
+        saveSession(user);
+        window.location.href = "dashboard.html";
+      });
+    </script>
+  </body>
+</html>
